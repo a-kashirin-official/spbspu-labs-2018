@@ -1,0 +1,64 @@
+image: 'alexeymartynov/cxx-test:0.3'
+stages:
+  - sanity
+  - build
+  - test
+
+variables:
+  ROOT_FORK: git@gitlab.com:spbspu-cxx-labs/spbspu-labs-2018.git
+
+before_script:
+  - mkdir -p ~/.ssh
+  - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  - 'export TEST_DIR="$(mktemp -d ./testXXXXXXXX)"'
+  - git clone  "$TEST_REPOSITORY" "$TEST_DIR"
+  - (cd "$TEST_DIR" && git checkout "$TEST_REPOSITORY_BRANCH" > /dev/null)
+  - echo "Using test case timeout $TIMEOUT sec"
+
+after_script:
+  - rm -rf "$TEST_DIR"
+
+author:
+  stage: sanity
+  script:
+    - '"$TEST_DIR"/validate-student.sh'
+
+branch:
+  stage: sanity
+  script:
+    - '"$TEST_DIR"/validate-branch.sh'
+
+content:
+  stage: sanity
+  script:
+    - '"$TEST_DIR"/validate-files.sh'
+
+build:
+  stage: build
+  script:
+    - '"$TEST_DIR"/build.sh'
+  artifacts:
+    paths:
+      - out
+    expire_in: 1 year
+
+unit:
+  stage: test
+  script:
+    - 'if test -d out ; then find out -type f -exec touch {} + ; fi'
+    - '"$TEST_DIR"/unit-tests.sh'
+  dependencies:
+    - build
+
+acceptance:
+  stage: test
+  script:
+    - 'if test -d out ; then find out -type f -exec touch {} + ; fi'
+    - '"$TEST_DIR"/acceptance-tests.sh'
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - out/*/*/acceptance.*
+    expire_in: 1 year
+    when: always

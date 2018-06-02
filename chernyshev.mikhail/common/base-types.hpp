@@ -1,0 +1,14 @@
+#ifndef BASE_TYPES
+#define BASE_TYPES
+namespace chernyshev
+{
+  struct point_t {
+    double x,y;// positon dot
+  };
+
+  struct rectangle_t{
+    double width,height;
+    point_t pos;    
+  };
+}
+#endif

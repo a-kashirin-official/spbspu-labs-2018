@@ -1,0 +1,80 @@
+#include <iostream>
+#include <cmath>
+#include <memory>
+#include "triangle.hpp"
+
+using namespace tseptsov;
+
+Triangle::Triangle(const point_t &A, const point_t &B, const point_t &C) :
+  A_(A),
+  B_(B),
+  C_(C)
+{
+  center_ = {(A_.x + B_.x + C_.x) / 3, (A_.y + B_.y + C_.y) / 3};
+}
+
+double Triangle::getArea() const
+{
+  return fabs((A_.x - C_.x) * (B_.y - C_.y) - (B_.x - C_.x) * (A_.y - C_.y)) / 2.0;
+}
+
+rectangle_t Triangle::getFrameRect() const
+{
+  double maxX = A_.x > B_.x ? (A_.x > C_.x ? A_.x : C_.x) : (B_.x > C_.x ? B_.x : C_.x);
+  double minX = A_.x < B_.x ? (A_.x < C_.x ? A_.x : C_.x) : (B_.x < C_.x ? B_.x : C_.x);
+  double maxY = A_.y > B_.y ? (A_.y > C_.y ? A_.y : C_.y) : (B_.y > C_.y ? B_.y : C_.y);
+  double minY = A_.y < B_.y ? (A_.y < C_.y ? A_.y : C_.y) : (B_.y < C_.y ? B_.y : C_.y);
+  return {maxX - minX, maxY - minY, {minX + (maxX - minX) / 2, minY + (maxY - minY) / 2}};
+}
+
+void Triangle::move(const point_t &pos)
+{
+  center_ = {pos.x, pos.y};
+  move(pos.x - (A_.x + B_.x + C_.x) / 3, pos.y - (A_.y + B_.y + C_.y) / 3);
+}
+
+void Triangle::move(const double Ox, const double Oy)
+{
+  A_ = {A_.x + Ox, A_.y + Oy};
+  B_ = {B_.x + Ox, B_.y + Oy};
+  C_ = {C_.x + Ox, C_.y + Oy};
+  center_ = {(A_.x + B_.x + C_.x) / 3, (A_.y + B_.y + C_.y) / 3};
+}
+
+void Triangle::OutData() const
+{
+  std::cout << "Point(A) : x=" << A_.x << " y=" << A_.y << std::endl;
+  std::cout << "Point(B) : x=" << B_.x << " y=" << B_.y << std::endl;
+  std::cout << "Point(C) : x=" << C_.x << " y=" << C_.y << std::endl << std::endl;
+}
+
+point_t Triangle::getCenter() const
+{
+  return center_;
+}
+
+void Triangle::scale(double coef)
+{
+  if (coef < 0) {
+    throw std::invalid_argument("Coef must be > 0");
+  }
+  A_.x = center_.x + coef * (A_.x - center_.x);
+  A_.y = center_.y + coef * (A_.y - center_.y);
+  B_.x = center_.x + coef * (B_.x - center_.x);
+  B_.y = center_.y + coef * (B_.y - center_.y);
+  C_.x = center_.x + coef * (C_.x - center_.x);
+  C_.y = center_.y + coef * (C_.y - center_.y);
+}
+
+void Triangle::rotate(double deg)
+{
+  double deg_ = deg * M_PI / 180;
+  A_ = {center_.x + (A_.x - center_.x) * cos(deg_) - (A_.y - center_.y) * sin(deg_),
+        center_.y + (A_.y - center_.y) * cos(deg_) + (A_.x - center_.x) * sin(deg_)};
+  B_ = {center_.x + (B_.x - center_.x) * cos(deg_) - (B_.y - center_.y) * sin(deg_),
+        center_.y + (B_.y - center_.y) * cos(deg_) + (B_.x - center_.x) * sin(deg_)};
+  C_ = {center_.x + (C_.x - center_.x) * cos(deg_) - (C_.y - center_.y) * sin(deg_),
+        center_.y + (C_.y - center_.y) * cos(deg_) + (C_.x - center_.x) * sin(deg_)};
+}
+
+
