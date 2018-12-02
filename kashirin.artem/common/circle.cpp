@@ -6,7 +6,8 @@ using namespace kashirin;
 
 Circle::Circle(double radius, const point_t &pos):
   radius_(radius),
-  center_(pos)
+  center_(pos),
+  angle_(0)
 {
   if (radius <= 0)
   {
@@ -47,4 +48,13 @@ void Circle::scale(const double coef)
     throw std::invalid_argument("Invalid coef");
   }
   radius_ *= coef;
+}
+
+void Circle::rotate(const double angle)
+{
+  angle_ += angle;
+  if (angle_ >= 360)
+  {
+    angle_ = fmod(angle_, 360);
+  }
 }
